@@ -15,7 +15,8 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-    printf("OpenGL Version: %s", glGetString(GL_VERSION));
+    printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
+
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
