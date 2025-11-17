@@ -14,6 +14,7 @@ int main() {
         printf("Window creation failed!\n");
     }
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     printf("OpenGL Version: %s", glGetString(GL_VERSION));
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
