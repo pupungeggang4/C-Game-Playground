@@ -47,7 +47,7 @@ int main() {
     glfwGetMonitorContentScale(monitor, &xscale, &yscale);
     printf("%f %f", xscale, yscale);
     int width = 640, height = 640;
-    window = glfwCreateWindow(width, height, "Dark Blending Test", NULL, NULL);
+    window = glfwCreateWindow(width * xscale, height * yscale, "Dark Blending Test", NULL, NULL);
     pixel = (GLubyte*)malloc(width * height * 4);
     if (!window) {
         printf("Failed to create GLFW window.\n");
@@ -90,7 +90,7 @@ int main() {
         renderLightCircle((float[]){0.0, 0.5}, 0.2, 40);
         renderLightCircle((float[]){0.0, -0.5}, 0.2, 40);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width * xscale, height * yscale, 0);
         
         glClearColor(0.7, 0.7, 0.7, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
