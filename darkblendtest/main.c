@@ -45,9 +45,12 @@ int main() {
     }
     float xscale, yscale;  
     glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-    printf("%f %f", xscale, yscale);
     int width = 640, height = 640;
+    #ifndef __APPLE__
     window = glfwCreateWindow(width * xscale, height * yscale, "Dark Blending Test", NULL, NULL);
+    #else
+    window = glfwCreateWindow(width, height, "Dark Blending Test", NULL, NULL);
+    #endif
     pixel = (GLubyte*)malloc(width * height * 4);
     if (!window) {
         printf("Failed to create GLFW window.\n");
