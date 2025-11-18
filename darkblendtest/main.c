@@ -3,13 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <png.h>
 
 #define LEFT 0
 #define RIGHT 1
 #define UP 2
 #define DOWN 3
 
+png_byte* readImage(char*);
 void renderRect(float[], float[]);
+void renderImage(png_byte*, float[]);
 void renderLightCircle(float[], float, int);
 void renderStencilCircle(float[], float, int);
 void keyHandle(GLFWwindow*, int, int, int, int);
@@ -19,30 +22,15 @@ float pos[2] = {0, 0};
 int keyPressed[4] = {0, 0, 0, 0};
 
 int main() {
-    unsigned char header[54];
-    unsigned int dataPos;
-    unsigned int iwidth, iheight;
-    unsigned int imageSize;
-    unsigned char * data;
-
-    FILE * file = fopen("a.bmp", "rb");
-    if (!file) { /* Error handling */ return 0; }
-    if (fread(header, 1, 54, file) != 54) { /* Error handling */ return 0; }
-    if (header[0] != 'B' || header[1] != 'M') { /* Error handling */ return 0; }
-    dataPos    = *(int*)&(header[0x0A]);
-    imageSize  = *(int*)&(header[0x22]);
-    iwidth      = *(int*)&(header[0x12]);
-    iheight     = *(int*)&(header[0x16]);
-    printf("%d, %d, %d, %d\n", dataPos, imageSize, iwidth, iheight);
-    fseek(file, dataPos, SEEK_SET);
-    data = malloc(imageSize);
-    fread(data, 1, imageSize, file);
-    fclose(file);
-
     GLFWmonitor* monitor;
     GLFWwindow* window;
     GLuint texture;
     GLubyte* pixel = NULL;
+    png_byte *imagePlayer = NULL, *imageGhost = NULL, *imageObject = NULL;
+    imagePlayer = readImage("player.png");
+    imageObject = readImage("object.png");
+    imageGhost = readImage("ghost.png");
+
     if (!glfwInit()) {
         printf("Failed to initialize GLFW.\n");
         return -1;
@@ -86,7 +74,11 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
-        renderRect((float[]){0.0, 0.7, 0.2, 0.2}, (float[]){0.0, 0.0, 1.0, 1.0});
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        renderImage(imageGhost, (float[]){0.5, -0.5, 0.2, 0.2});
+        renderImage(imageGhost, (float[]){-0.5, 0.5, 0.2, 0.2});
+        glDisable(GL_TEXTURE_2D);
         renderLightCircle(pos, 0.5, 40);
         renderLightCircle((float[]){0.5, 0.0}, 0.2, 40);
         renderLightCircle((float[]){-0.5, 0.0}, 0.2, 40);
@@ -95,31 +87,16 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture);
         glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
         
-        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClearColor(0.7, 0.7, 0.7, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        renderRect((float[]){0.5, 0.5, 0.2, 0.2}, (float[]){1.0, 1.0, 0.0, 1.0});
-        renderRect((float[]){0.5, -0.5, 0.2, 0.2}, (float[]){0.0, 1.0, 1.0, 1.0});
-        renderRect((float[]){-0.5, -0.5, 0.2, 0.2}, (float[]){1.0, 0.0, 1.0, 1.0});
-        renderRect((float[]){-0.5, 0.5, 0.2, 0.2}, (float[]){0.0, 1.0, 0.0, 1.0});
-        renderRect((float[]){pos[0], pos[1], 0.2, 0.2}, (float[]){0.0, 0.0, 0.0, 1.0});
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);        
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 80, 80, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
-        glBegin(GL_QUADS);
-        glColor4f(1.0, 1.0, 1.0, 1.0);
-        glTexCoord2f(0.0, 0.0);
-        glVertex2f(-0.1, -0.1);
-        glTexCoord2f(1.0, 0.0);
-        glVertex2f(0.1, -0.1);
-        glTexCoord2f(1.0, 1.0);
-        glVertex2f(0.1, 0.1);
-        glTexCoord2f(0.0, 1.0);
-        glVertex2f(-0.1, 0.1);
-        glEnd();
+        renderImage(imageObject, (float[]){-0.5, -0.5, 0.2, 0.2});
+        renderImage(imageObject, (float[]){0.5, 0.5, 0.2, 0.2});
+        renderImage(imagePlayer, (float[]){pos[0], pos[1], 0.2, 0.2});
 
         glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-        glBindTexture(GL_TEXTURE_2D, texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
         glColor4f(1.0, 1.0, 1.0, 1.0);
         glBegin(GL_QUADS);
@@ -137,9 +114,39 @@ int main() {
         glfwPollEvents();
     }
     glfwTerminate();
+    free(imagePlayer);
+    free(imageObject);
+    free(imageGhost);
     free(pixel);
-    free(data);
     return 0;
+}
+
+png_byte* readImage(char* path) {
+    unsigned char header[54];
+    unsigned int dataPos;
+    unsigned int iwidth, iheight;
+    unsigned int imageSize;
+
+    FILE * file = fopen(path, "rb");
+    if (!file) { return 0; }
+
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    png_init_io(png_ptr, file);
+    png_read_info(png_ptr, info_ptr);
+    int width = png_get_image_width(png_ptr, info_ptr);
+    int height = png_get_image_height(png_ptr, info_ptr);
+    png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+    png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+    size_t row_bytes = png_get_rowbytes(png_ptr, info_ptr);
+    png_byte* data = (png_byte*)malloc(row_bytes * height);
+    for (int y = 0; y < height; y++) {
+        png_read_row(png_ptr, &(data[y * row_bytes]), NULL);
+    }
+    png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+    fclose(file);
+    return data;
 }
 
 void move() {
@@ -199,6 +206,21 @@ void renderRect(float rect[4], float color[4]) {
     glEnd();
 }
 
+void renderImage(png_byte* data, float rect[4]) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 80, 80, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glBegin(GL_QUADS);
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+    glTexCoord2f(0.0, 1.0);
+    glVertex2f(rect[0] - rect[2] / 2, rect[1] - rect[3] / 2);
+    glTexCoord2f(1.0, 1.0);
+    glVertex2f(rect[0] + rect[2] / 2, rect[1] - rect[3] / 2);
+    glTexCoord2f(1.0, 0.0);
+    glVertex2f(rect[0] + rect[2] / 2, rect[1] + rect[3] / 2);
+    glTexCoord2f(0.0, 0.0);
+    glVertex2f(rect[0] - rect[2] / 2, rect[1] + rect[3] / 2);
+    glEnd();
+}
+
 void renderStencilCircle(float center[2], float radius, int nVertex) {
     for (int i = 0; i < nVertex; i++) {
         float angle1 = M_PI * 2.0 / nVertex * i, angle2 = M_PI * 2.0 / nVertex * (i + 1);
@@ -226,19 +248,19 @@ void renderLightCircle(float center[2], float radius, int nVertex) {
             center[0] + radius * cos(angle2), center[1] + radius * sin(angle2),
         };
         glBegin(GL_TRIANGLES);
-        glColor4f(0.8, 0.8, 0.8, 1.0);
+        glColor4f(1.0, 1.0, 1.0, 1.0);
         glVertex2f(vertex[0], vertex[1]);
         glVertex2f(vertex[2], vertex[3]);
         glVertex2f(vertex[6], vertex[7]);
         glEnd();
         glBegin(GL_QUADS);
-        glColor4f(0.8, 0.8, 0.8, 1.0);
+        glColor4f(1.0, 1.0, 1.0, 1.0);
         glVertex2f(vertex[2], vertex[3]);
         glColor4f(0.0, 0.0, 0.0, 1.0);
         glVertex2f(vertex[4], vertex[5]);
         glColor4f(0.0, 0.0, 0.0, 1.0);
         glVertex2f(vertex[8], vertex[9]);
-        glColor4f(0.8, 0.8, 0.8, 1.0);
+        glColor4f(1.0, 1.0, 1.0, 1.0);
         glVertex2f(vertex[6], vertex[7]);
         glEnd();
     }
