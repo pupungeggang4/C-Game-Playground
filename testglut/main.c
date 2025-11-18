@@ -19,20 +19,21 @@ int main(int argc, char** argv) {
     int width = 800, height = 600;
     int screen_width = glutGet(GLUT_SCREEN_WIDTH);
     int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
-    int initial_x = (screen_width - width) / 2;
-    int initial_y = (screen_height - height) / 2;
+    int xPos = (screen_width - width) / 2;
+    int yPos = (screen_height - height) / 2;
 
     glutInitWindowSize(width, height);
-    glutInitWindowPosition(initial_x, initial_y);
+    glutInitWindowPosition(xPos, yPos);
 
     glutCreateWindow("FreeGLUT Test");
     glutDisplayFunc(render);
     glutKeyboardFunc(handleKey);
     glutTimerFunc(16, handleScene, 1);
 
+    glViewport(0, 0, width, height);
     printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
     glutMainLoop();
-    glViewport(0, 0, width, height);
+
     return 0;
 }
 
