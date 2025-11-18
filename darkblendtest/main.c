@@ -11,8 +11,9 @@
 #define DOWN 3
 
 png_byte* readImage(char*);
+void loadTexture(GLuint, png_byte*, int, int);
 void renderRect(float[], float[]);
-void renderImage(png_byte*, float[]);
+void renderTexture(GLuint, float[]);
 void renderLightCircle(float[], float, int);
 void renderStencilCircle(float[], float, int);
 void keyHandle(GLFWwindow*, int, int, int, int);
@@ -24,7 +25,7 @@ int keyPressed[4] = {0, 0, 0, 0};
 int main() {
     GLFWmonitor* monitor;
     GLFWwindow* window;
-    GLuint texture;
+    GLuint texture, texturePlayer, textureGhost, textureObject;
     GLubyte* pixel = NULL;
     png_byte *imagePlayer = NULL, *imageGhost = NULL, *imageObject = NULL;
     imagePlayer = readImage("player.png");
@@ -44,10 +45,6 @@ int main() {
     }
     float xscale, yscale;  
     glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-    //glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 1);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
     int width = 800 * xscale, height = 800 * yscale;
     window = glfwCreateWindow(width, height, "Dark Blending Test", NULL, NULL);
     pixel = (GLubyte*)malloc(width * height * 4);
@@ -67,6 +64,12 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glGenTextures(1, &texturePlayer);
+    glGenTextures(1, &textureGhost);
+    glGenTextures(1, &textureObject);
+    loadTexture(texturePlayer, imagePlayer, 80, 80);
+    loadTexture(textureGhost, imageGhost, 80, 80);
+    loadTexture(textureObject, imageObject, 80, 80);
 
     while (!glfwWindowShouldClose(window)) {
         move();
@@ -76,8 +79,8 @@ int main() {
         glBlendFunc(GL_ONE, GL_ONE);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture);
-        renderImage(imageGhost, (float[]){0.5, -0.5, 0.2, 0.2});
-        renderImage(imageGhost, (float[]){-0.5, 0.5, 0.2, 0.2});
+        renderTexture(textureGhost, (float[]){0.5, -0.5, 0.2, 0.2});
+        renderTexture(textureGhost, (float[]){-0.5, 0.5, 0.2, 0.2});
         glDisable(GL_TEXTURE_2D);
         renderLightCircle(pos, 0.5, 40);
         renderLightCircle((float[]){0.5, 0.0}, 0.2, 40);
@@ -85,19 +88,18 @@ int main() {
         renderLightCircle((float[]){0.0, 0.5}, 0.2, 40);
         renderLightCircle((float[]){0.0, -0.5}, 0.2, 40);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
         
         glClearColor(0.7, 0.7, 0.7, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);        
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        renderImage(imageObject, (float[]){-0.5, -0.5, 0.2, 0.2});
-        renderImage(imageObject, (float[]){0.5, 0.5, 0.2, 0.2});
-        renderImage(imagePlayer, (float[]){pos[0], pos[1], 0.2, 0.2});
+        renderTexture(textureObject, (float[]){-0.5, -0.5, 0.2, 0.2});
+        renderTexture(textureObject, (float[]){0.5, 0.5, 0.2, 0.2});
+        renderTexture(texturePlayer, (float[]){pos[0], pos[1], 0.2, 0.2});
 
         glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glColor4f(1.0, 1.0, 1.0, 1.0);
         glBegin(GL_QUADS);
         glTexCoord2f(0.0, 0.0);
@@ -147,6 +149,15 @@ png_byte* readImage(char* path) {
     png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
     fclose(file);
     return data;
+}
+
+void loadTexture(GLuint texture, png_byte* data, int width, int height) {
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
 void move() {
@@ -206,8 +217,8 @@ void renderRect(float rect[4], float color[4]) {
     glEnd();
 }
 
-void renderImage(png_byte* data, float rect[4]) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 80, 80, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+void renderTexture(GLuint texture, float rect[4]) {
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBegin(GL_QUADS);
     glColor4f(1.0, 1.0, 1.0, 1.0);
     glTexCoord2f(0.0, 1.0);
