@@ -9,7 +9,7 @@ int main() {
         return -1;
     }
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE);
-    window = glfwCreateWindow(1280, 720, "OpenGL Test Window", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "OpenGL Test Window", NULL, NULL);
     if (!window) {
         printf("Window creation failed!\n");
     }
