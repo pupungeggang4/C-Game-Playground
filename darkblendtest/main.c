@@ -62,6 +62,7 @@ int main() {
     glfwSwapInterval(1);
     printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
     glViewport(0, 0, width * xscale, height * yscale);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
