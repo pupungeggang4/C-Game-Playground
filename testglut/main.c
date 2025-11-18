@@ -10,7 +10,7 @@ void handleScene();
 void timer(int);
 
 float time = 0;
-unsigned int frameCurrent = 0, framePrevious = 0;
+int frameCurrent = 0, framePrevious = 0, delta = 0;
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("FreeGLUT Test");
     glutDisplayFunc(render);
     glutKeyboardFunc(handleKey);
-    glutIdleFunc(handleScene);
+    glutTimerFunc(16, handleScene, 1);
 
     printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
     glutMainLoop();
@@ -56,18 +56,17 @@ void handleKey(unsigned char key, int x, int y) {
     }
 }
 
-void handleScene() {
+void handleScene(int value) {
     frameCurrent = glutGet(GLUT_ELAPSED_TIME);
-    int delta = frameCurrent - framePrevious;
+    int dt = frameCurrent - framePrevious;
     framePrevious = glutGet(GLUT_ELAPSED_TIME);
     time += 0.01;
-    if (delta < 16) {
-        glutTimerFunc(16 - delta, timer, 1);
-    } else {
-        glutPostRedisplay();
-    }
-}
-
-void timer(int value) {
     glutPostRedisplay();
+    if (dt < 16) {
+        delta = 16;
+        glutTimerFunc(16 - dt, handleScene, 1);
+    } else {
+        delta = dt;
+        glutTimerFunc(0, handleScene, 1);
+    }
 }
