@@ -3,6 +3,7 @@
 
 #include <GL/gl.h>
 #include <GL/glut.h>
+//#include <GL/freeglut.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,6 +12,7 @@ FT_Face font;
 GLuint texture;
 
 void render();
+void handleKey(unsigned char, int, int);
 
 int main(int argc, char** argv) {
     FT_Init_FreeType(&ft);
@@ -28,8 +30,8 @@ int main(int argc, char** argv) {
 
     glutInitWindowSize(width, height);
     glutInitWindowPosition(xPos, yPos);
-
     glutCreateWindow("FreeGLUT Text Test");
+    glutKeyboardFunc(handleKey);
     glutDisplayFunc(render);
     
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -65,4 +67,10 @@ void render() {
     glVertex2f(-0.1, 0.1);
     glEnd();
     glutSwapBuffers();
+}
+
+void handleKey(unsigned char key, int x, int y) {
+    if (key == 27) {
+        exit(0);
+    }
 }
