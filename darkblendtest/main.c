@@ -45,7 +45,8 @@ int main() {
     }
     float xscale, yscale;  
     glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-    int width = 800 * xscale, height = 800 * yscale;
+    printf("%f %f", xscale, yscale);
+    int width = 640, height = 640;
     window = glfwCreateWindow(width, height, "Dark Blending Test", NULL, NULL);
     pixel = (GLubyte*)malloc(width * height * 4);
     if (!window) {
@@ -57,6 +58,7 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
+    glViewport(0, 0, width * xscale, height * yscale);
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
