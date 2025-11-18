@@ -4,32 +4,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-float time = 0, a = 0, b = 0;
+void render();
+void handleKey(unsigned char, int, int);
+void handleScene();
+void timer(int);
 
-void render() {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex2f(sin(time), 0.5f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex2f(-0.5f, -0.5f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex2f(0.5f, -0.5f);
-    glEnd();
-    glutSwapBuffers();
-}
-
-void handleKey(unsigned char key, int x, int y) {
-    if (key == 27) {
-        exit(0);
-    }
-}
-
-void handleScene() {
-    time += 0.01;
-    glutPostRedisplay();
-}
+float time = 0;
+unsigned int frameCurrent = 0, framePrevious = 0;
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
@@ -53,4 +34,40 @@ int main(int argc, char** argv) {
     glutMainLoop();
     glViewport(0, 0, width, height);
     return 0;
+}
+
+void render() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBegin(GL_TRIANGLES);
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex2f(sin(time), 0.5f);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex2f(-0.5f, -0.5f);
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glVertex2f(0.5f, -0.5f);
+    glEnd();
+    glutSwapBuffers();
+}
+
+void handleKey(unsigned char key, int x, int y) {
+    if (key == 27) {
+        exit(0);
+    }
+}
+
+void handleScene() {
+    frameCurrent = glutGet(GLUT_ELAPSED_TIME);
+    int delta = frameCurrent - framePrevious;
+    framePrevious = glutGet(GLUT_ELAPSED_TIME);
+    time += 0.01;
+    if (delta < 16) {
+        glutTimerFunc(16 - delta, timer, 1);
+    } else {
+        glutPostRedisplay();
+    }
+}
+
+void timer(int value) {
+    glutPostRedisplay();
 }
