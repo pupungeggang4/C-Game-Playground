@@ -1,5 +1,5 @@
 windows-msys:
-	gcc main.c -o main -lSDL3 -lopengl32
+	gcc main.c -o main -lSDL3 -lopengl32 -mwindows
 
 macbrew:
 	gcc main.c -o main.out -I/opt/homebrew/include -L/opt/homebrew/lib -lSDL3 -framework OpenGL

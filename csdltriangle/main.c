@@ -43,5 +43,6 @@ int main(int argc, char** argv) {
         glEnd();
         SDL_GL_SwapWindow(window);
     }
+    SDL_Quit();
     return 0;
 }
