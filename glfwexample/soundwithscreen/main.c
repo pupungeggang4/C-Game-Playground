@@ -56,8 +56,6 @@ int loadAudio(const char* filename, char** buffer, int* bufferSize, int* channel
     *bufferSize = bytes;
 
     ov_clear(&oggFile);
-    fclose(file);
-
     return 0;
 }
 
