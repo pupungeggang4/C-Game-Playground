@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
         glVertex2f(0.5, -0.5);
         glEnd();
         SDL_GL_SwapWindow(window);
+        printf("%d\n", glGetError());
     }
     SDL_Quit();
     return 0;

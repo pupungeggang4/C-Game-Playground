@@ -13,4 +13,7 @@ linux-custom:
 linuxbrew:
 	gcc main.c -o main.out -I/home/linuxbrew/.linuxbrew/include -L/home/linuxbrew/.linuxbrew/lib -lSDL3 -lGL
 
+linuxbrew-custom:
+	gcc main.c -o main.out -I/home/linuxbrew/.linuxbrew/include -L/home/linuxbrew/.linuxbrew/lib -I$(SDL_PATH)/SDL/include -L$(SDL_PATH)/SDL/build -Wl,-rpath=$(SDL_PATH)/SDL/build -lSDL3 -lGL
+
 dummy:
