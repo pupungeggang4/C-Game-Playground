@@ -1,5 +1,5 @@
 #include <SDL3/SDL.h>
-#include <GL/gl.h>
+#include <SDL3/SDL_opengl.h>
 
 #include <stdio.h>
 
