@@ -1,14 +1,13 @@
 #pragma once
 #include "general.h"
 
-struct Rect;
-typedef struct Rect Rect;
+typedef struct Rect2 Rect2;
 
-struct Player {
+typedef struct Player {
     float speed;
-    Rect* rect;
-};
-typedef struct Player Player;
+    Rect2* rect;
+} Player;
 
 Player* makePlayer();
 void destroyPlayer(Player**);
+void movePlayer(Player*);

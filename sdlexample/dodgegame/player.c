@@ -1,4 +1,5 @@
 #include "player.h"
+#include "var.h"
 #include "shape.h"
 
 Player* makePlayer() {
@@ -9,17 +10,13 @@ Player* makePlayer() {
         return NULL;
     }
 
-    player->rect = malloc(sizeof(Rect));
+    player->rect = makeRect2(400.0f, 300.0f, 80.0f, 80.0f);
+
     if (player->rect == NULL) {
         printf("Failed to allocate player rect.\n");
         return NULL;
     }
 
-    player->rect = malloc(sizeof(Rect));
-    player->rect->x = 400.0f;
-    player->rect->y = 300.0f;
-    player->rect->w = 80.0f;
-    player->rect->h = 80.0f;
     player->speed = 320.0f;
     return player;
 }
@@ -30,7 +27,24 @@ void destroyPlayer(Player** playerPtr) {
     }
 
     Player* player = *playerPtr;
-    destroyRect(&player->rect);
+    destroyRect2(&(player->rect));
     free(player);
     *playerPtr = NULL;
+}
+
+void movePlayer(Player* player) {
+    if (player != NULL) {
+        if (keyPressed[LEFT] == 1) {
+            player->rect->pos->x -= player->speed * delta;
+        }
+        if (keyPressed[RIGHT] == 1) {
+            player->rect->pos->x += player->speed * delta;
+        }
+        if (keyPressed[UP] == 1) {
+            player->rect->pos->y -= player->speed * delta;
+        }
+        if (keyPressed[DOWN] == 1) {
+            player->rect->pos->y += player->speed * delta;
+        }
+    }
 }

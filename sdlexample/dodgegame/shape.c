@@ -34,7 +34,7 @@ Rect2* makeRect2(float x, float y, float w, float h) {
     return rect;
 }
 
-void distroyRect2(Rect2** rectPtr) {
+void destroyRect2(Rect2** rectPtr) {
     if (rectPtr == NULL || *rectPtr == NULL) {
         return;
     }
