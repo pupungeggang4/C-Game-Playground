@@ -20,8 +20,10 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    SDL_CreateWindowAndRenderer(800, 600, SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);
+
     player = makePlayer();
-    destroyPlayer(player);
+    destroyPlayer(&player);
 
     TTF_Quit();
     IMG_Quit();
