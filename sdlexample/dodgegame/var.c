@@ -1,3 +1,4 @@
 #include "var.h"
+#include "player.h"
 
-int a = 10;
+Player* player = NULL;
