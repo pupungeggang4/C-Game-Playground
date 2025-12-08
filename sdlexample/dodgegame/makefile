@@ -3,3 +3,6 @@ windows-msys:
 
 macbrew:
 	gcc *.c -o main -I/opt/homebrew/include -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf
+
+linux:
+	gcc *.c -o main -lSDL2 -lSDL2_image -lSDL2_ttf -lm
